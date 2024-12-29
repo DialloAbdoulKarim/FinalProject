@@ -1,31 +1,41 @@
 import streamlit as st
 from transformers import BartForConditionalGeneration, BartTokenizer
+import torch
 
-# Charger le modèle et le tokenizer
-@st.cache_resource
-def load_model():
-    model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
-    tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
-    return model, tokenizer
+# Charger le modèle pré-entraîné BART et le tokenizer
+model = BartForConditionalGeneration.from_pretrained('facebook/bart-large')
+tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
 
-model, tokenizer = load_model()
+# Fonction de génération de texte
+def generate_text(input_text, max_length=100, num_beams=5):
+    # Tokeniser le texte d'entrée
+    inputs = tokenizer(input_text, return_tensors="pt")
+    
+    # Générer le texte avec des paramètres de contrôle
+    output = model.generate(inputs['input_ids'], 
+                            max_length=max_length, 
+                            num_beams=num_beams, 
+                            no_repeat_ngram_size=2, 
+                            early_stopping=True)
+    
+    # Décoder et retourner le texte généré
+    generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+    return generated_text
 
-# Fonction pour générer du texte avec BART
-def generate_text(prompt):
-    inputs = tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
-    summary_ids = model.generate(inputs['input_ids'], max_length=150, num_beams=5, early_stopping=True)
-    return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+# Titre de l'application Streamlit
+st.title("Générateur de Texte avec BART")
 
-# Interface utilisateur Streamlit
-st.title("Générateur de texte avec BART")
-st.write("Entrez un texte ci-dessous pour générer une réponse :")
+# Entrée utilisateur pour le texte d'entrée
+input_text = st.text_area("Entrez un texte de départ", "Once upon a time in a land far away")
 
-prompt = st.text_area("Votre texte", "Entrez le texte ici")
+# Slider pour la longueur du texte généré
+max_length = st.slider("Longueur du texte généré", 50, 200, 100)
 
+# Choisir le nombre de beams pour la recherche
+num_beams = st.slider("Nombre de beams pour la génération", 1, 10, 5)
+
+# Bouton pour générer le texte
 if st.button("Générer le texte"):
-    if prompt:
-        result = generate_text(prompt)
-        st.write("Texte généré :")
-        st.write(result)
-    else:
-        st.write("Veuillez entrer un texte pour générer la réponse.")
+    generated_text = generate_text(input_text, max_length, num_beams)
+    st.subheader("Texte généré :")
+    st.write(generated_text)
