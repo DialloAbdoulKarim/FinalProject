@@ -1,19 +1,5 @@
-﻿streamlit
-torch
-transformers
-huggingface-hub==0.27.0
-imbalanced-learn==0.13.0
-ipykernel==6.29.5
-jupyter_core==5.7.2
-matplotlib==3.10.0
-nltk==3.9.1
-numpy==2.2.1
-pandas==2.2.3
-safetensors==0.4.5
-scikit-learn==1.6.0
-scipy==1.14.1
-streamlit==1.41.1
-tokenizers==0.21.0
-torch==2.5.1
-transformers==4.47.1
+streamlit==1.20.0
+transformers==4.27.0
+torch==2.1.0
+
 
