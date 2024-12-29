@@ -1,28 +1,31 @@
 import streamlit as st
 from transformers import BartForConditionalGeneration, BartTokenizer
 
-# Load the pre-trained BART model and tokenizer from Hugging Face
-tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
-model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
+# Charger le modèle et le tokenizer
+@st.cache_resource
+def load_model():
+    model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn")
+    tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
+    return model, tokenizer
 
-# Function to summarize the input text
-def summarize_text(text):
-    inputs = tokenizer(text, return_tensors="pt", max_length=1024, truncation=True)
-    summary_ids = model.generate(inputs["input_ids"], max_length=150, min_length=30, length_penalty=2.0, num_beams=4, early_stopping=True)
-    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    return summary
+model, tokenizer = load_model()
 
-# Streamlit app layout
-st.title("Text Summarization using BART")
-st.write("This is a simple text summarization app using the BART model. Enter your text below and get a summary.")
+# Fonction pour générer du texte avec BART
+def generate_text(prompt):
+    inputs = tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
+    summary_ids = model.generate(inputs['input_ids'], max_length=150, num_beams=5, early_stopping=True)
+    return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
-# Text input field for the user
-input_text = st.text_area("Enter Text", "Paste or type your text here...")
+# Interface utilisateur Streamlit
+st.title("Générateur de texte avec BART")
+st.write("Entrez un texte ci-dessous pour générer une réponse :")
 
-if st.button("Generate Summary"):
-    if input_text.strip():
-        summary = summarize_text(input_text)
-        st.subheader("Summary:")
-        st.write(summary)
+prompt = st.text_area("Votre texte", "Entrez le texte ici")
+
+if st.button("Générer le texte"):
+    if prompt:
+        result = generate_text(prompt)
+        st.write("Texte généré :")
+        st.write(result)
     else:
-        st.warning("Please enter some text to summarize.")
+        st.write("Veuillez entrer un texte pour générer la réponse.")
