@@ -5,6 +5,4 @@ spacy==3.8.3
 streamlit==1.41.1
 tqdm==4.67.1
 transformers==4.47.1
-Flask==2.0.1
-newspaper3k==0.2.8
 torch==1.13.0
